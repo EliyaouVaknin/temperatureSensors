@@ -1,8 +1,21 @@
 version: '3.9'
 
 services:
+  php:
+    build: .
+    image: omc-php
+    container_name: omc-php
+    expose:
+      - "9000"
+    volumes:
+      - ./app:/var/www
+    depends_on:
+      - postgres
+      - redis
+
   nginx:
     image: nginx:stable
+    container_name: omc-nginx
     ports:
       - "8080:80"
     volumes:
@@ -11,18 +24,9 @@ services:
     depends_on:
       - php
 
-  php:
-    build: .
-    volumes:
-      - ./app:/var/www
-    expose:
-      - "9000"
-    depends_on:
-      - postgres
-      - redis
-
   postgres:
     image: postgres:15
+    container_name: omc-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -33,18 +37,20 @@ services:
 
   redis:
     image: redis:6.2
+    container_name: omc-redis
 
   worker:
     build: .
+    image: omc-worker
     working_dir: /var/www
     volumes:
       - ./worker:/var/www
-      - ./app/vendor:/var/www/vendor
-      - ./app/.env:/var/www/.env
-    command: ["php", "index.php"]
     depends_on:
       - redis
       - postgres
+    scale: 4
+    deploy:
+      replicas: 4
 
 volumes:
   pgdata:

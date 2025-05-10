@@ -3,6 +3,12 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
+$envPath = __DIR__ . '/../app/.env';
+if (file_exists($envPath)) {
+    $dotenv = Dotenv::createImmutable(dirname($envPath));
+    $dotenv->load();
+}
+
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 

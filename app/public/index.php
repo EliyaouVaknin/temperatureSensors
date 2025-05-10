@@ -3,12 +3,21 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Factory\AppFactory;
 
-$app = AppFactory::create();
+$envPath = __DIR__ . '/../.env';
+if (file_exists($envPath)) {
+    $dotenv = Dotenv::createImmutable(dirname($envPath));
+    $dotenv->load();
+}
 
-// Optional: error middleware
+$app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 
-// Load routes
+// TEMP TEST ROUTE
+$app->get('/_alive', function ($req, $res) {
+    $res->getBody()->write('alive');
+    return $res;
+});
+
 require __DIR__ . '/../src/routes.php';
 
 $app->run();
