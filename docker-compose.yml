@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:stable
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  php:
+    build: .
+    volumes:
+      - ./app:/var/www
+    expose:
+      - "9000"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tempsensors
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:6.2
+
+  worker:
+    build: .
+    working_dir: /var/www
+    volumes:
+      - ./worker:/var/www
+      - ./app/vendor:/var/www/vendor
+      - ./app/.env:/var/www/.env
+    command: ["php", "index.php"]
+    depends_on:
+      - redis
+      - postgres
+
+volumes:
+  pgdata:
