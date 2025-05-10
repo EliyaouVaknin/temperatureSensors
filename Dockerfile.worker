@@ -1,0 +1,18 @@
+FROM php:8.2-cli
+
+RUN apt-get update && apt-get install -y \
+    git zip unzip curl libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+WORKDIR /var/www
+
+# Copy the worker PHP logic
+COPY ./worker /var/www
+
+# Copy app vendor dependencies to worker
+COPY ./app/vendor /var/www/vendor
+COPY ./app/.env /var/www/.env
+
+CMD ["php", "index.php"]

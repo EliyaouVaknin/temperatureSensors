@@ -16,5 +16,5 @@ COPY ./app /var/www
 
 RUN composer install
 
-CMD ["php-fpm", "-F"]
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
 
